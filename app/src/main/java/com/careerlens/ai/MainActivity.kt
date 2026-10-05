@@ -1,6 +1,5 @@
-package com.example.careerlens
+package com.careerlens.ai
 
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -10,6 +9,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.careerlens.ai.R
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
 
@@ -61,11 +61,10 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // UI placeholder confirmation before Step 3 (PDF text extraction)
             cardResult.visibility = View.VISIBLE
             tvResults.text = "File: $selectedPdfName\n" +
                     "Job Description Length: ${jobDesc.length} characters\n\n" +
-                    "UI flow verified. Next: Extracting PDF contents."
+                    "UI flow verified! Ready for Step 3."
         }
     }
 
