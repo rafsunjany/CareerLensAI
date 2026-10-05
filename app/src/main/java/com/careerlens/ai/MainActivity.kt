@@ -1,66 +1,82 @@
-package com.careerlens.ai
+package com.example.careerlens
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import android.provider.OpenableColumns
+import android.view.View
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.textfield.TextInputEditText
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+
+    private var selectedPdfUri: Uri? = null
+    private var selectedPdfName: String? = null
+
+    private lateinit var tvResumeStatus: TextView
+    private lateinit var etJobDescription: TextInputEditText
+    private lateinit var cardResult: MaterialCardView
+    private lateinit var tvResults: TextView
+
+    private val selectPdfLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            selectedPdfUri = uri
+            selectedPdfName = getFileName(uri)
+            tvResumeStatus.text = "Loaded: $selectedPdfName"
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        setContent {
-            CareerLensAI()
+        val btnUploadResume: Button = findViewById(R.id.btnUploadResume)
+        val btnAnalyze: Button = findViewById(R.id.btnAnalyze)
+        tvResumeStatus = findViewById(R.id.tvResumeStatus)
+        etJobDescription = findViewById(R.id.etJobDescription)
+        cardResult = findViewById(R.id.cardResult)
+        tvResults = findViewById(R.id.tvResults)
+
+        btnUploadResume.setOnClickListener {
+            selectPdfLauncher.launch("application/pdf")
+        }
+
+        btnAnalyze.setOnClickListener {
+            val jobDesc = etJobDescription.text.toString().trim()
+
+            if (selectedPdfUri == null) {
+                Toast.makeText(this, "Please select a resume PDF first", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (jobDesc.isEmpty()) {
+                Toast.makeText(this, "Please paste a job description", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // UI placeholder confirmation before Step 3 (PDF text extraction)
+            cardResult.visibility = View.VISIBLE
+            tvResults.text = "File: $selectedPdfName\n" +
+                    "Job Description Length: ${jobDesc.length} characters\n\n" +
+                    "UI flow verified. Next: Extracting PDF contents."
         }
     }
-}
 
-@Composable
-fun CareerLensAI() {
-
-    MaterialTheme {
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-
-            horizontalAlignment = Alignment.CenterHorizontally,
-
-            verticalArrangement = Arrangement.Center
-        ) {
-
-            Text(
-                text = "CareerLens AI",
-                style = MaterialTheme.typography.headlineLarge
-            )
-
-            Text(
-                text = "AI-Powered Resume Analyzer",
-                modifier = Modifier.padding(top = 8.dp)
-            )
-
-            Button(
-                onClick = {
-                    // Resume upload will be added later
-                },
-                modifier = Modifier.padding(top = 24.dp)
-            ) {
-
-                Text("Upload Resume")
-
+    private fun getFileName(uri: Uri): String {
+        var name = "resume.pdf"
+        contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (nameIndex != -1 && cursor.moveToFirst()) {
+                name = cursor.getString(nameIndex)
             }
         }
+        return name
     }
 }
