@@ -19,7 +19,6 @@ import com.tom_roush.pdfbox.text.PDFTextStripper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.InputStream
 
 class MainActivity : AppCompatActivity() {
 
@@ -74,18 +73,30 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            cardResult.visibility = View.VISIBLE
-            val samplePreview = if (extractedResumeText.length > 250) {
-                extractedResumeText.substring(0, 250) + "..."
-            } else {
-                extractedResumeText
-            }
+            // Run comparison algorithm
+            val result = ResumeMatcher.calculateMatch(extractedResumeText, jobDesc)
 
-            tvResults.text = "Resume: $selectedPdfName\n" +
-                    "Extracted Characters: ${extractedResumeText.length}\n" +
-                    "Job Description Characters: ${jobDesc.length}\n\n" +
-                    "Preview of Resume Text:\n\"$samplePreview\"\n\n" +
-                    "Step 3 complete! Ready for Step 4 matching."
+            cardResult.visibility = View.VISIBLE
+            tvResults.text = buildString {
+                append("Match Score: ${result.score}%\n\n")
+
+                append("Matching Skills (${result.matchedSkills.size}):\n")
+                if (result.matchedSkills.isNotEmpty()) {
+                    append(result.matchedSkills.joinToString(", ") { "• $it" })
+                } else {
+                    append("None explicitly detected.")
+                }
+                append("\n\n")
+
+                append("Missing Skills / Keywords (${result.missingSkills.size}):\n")
+                if (result.missingSkills.isNotEmpty()) {
+                    append(result.missingSkills.joinToString(", ") { "• $it" })
+                } else {
+                    append("Great match! No critical missing taxonomy skills.")
+                }
+                append("\n\n")
+                append("Analyzed from: $selectedPdfName")
+            }
         }
     }
 
@@ -103,7 +114,7 @@ class MainActivity : AppCompatActivity() {
                         if (extractedResumeText.isNotEmpty()) {
                             tvResumeStatus.text = "Loaded: $selectedPdfName (${extractedResumeText.length} chars)"
                         } else {
-                            tvResumeStatus.text = "Loaded: $selectedPdfName (Warning: No text found. Might be scanned image)"
+                            tvResumeStatus.text = "Loaded: $selectedPdfName (Warning: Empty text or scanned image)"
                         }
                     }
                 }
