@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.careerlens.ai.BuildConfig
 import com.careerlens.ai.R
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
@@ -33,7 +34,6 @@ class MainActivity : AppCompatActivity() {
     private var selectedPdfName: String? = null
     private var extractedResumeText: String = ""
 
-    private lateinit var etApiKey: TextInputEditText
     private lateinit var tvResumeStatus: TextView
     private lateinit var etJobDescription: TextInputEditText
     private lateinit var btnAnalyze: Button
@@ -63,7 +63,6 @@ class MainActivity : AppCompatActivity() {
         PDFBoxResourceLoader.init(applicationContext)
 
         val btnUploadResume: Button = findViewById(R.id.btnUploadResume)
-        etApiKey = findViewById(R.id.etApiKey)
         btnAnalyze = findViewById(R.id.btnAnalyze)
         tvResumeStatus = findViewById(R.id.tvResumeStatus)
         etJobDescription = findViewById(R.id.etJobDescription)
@@ -75,7 +74,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnAnalyze.setOnClickListener {
-            val apiKey = etApiKey.text.toString().trim()
             val jobDesc = etJobDescription.text.toString().trim()
 
             if (selectedPdfUri == null || extractedResumeText.isBlank()) {
@@ -96,11 +94,13 @@ class MainActivity : AppCompatActivity() {
                     "• Matched: ${if (localMatch.matchedSkills.isEmpty()) "None" else localMatch.matchedSkills.joinToString(", ")}\n" +
                     "• Missing: ${if (localMatch.missingSkills.isEmpty()) "None" else localMatch.missingSkills.joinToString(", ")}\n\n"
 
-            if (apiKey.isEmpty()) {
-                tvResults.text = localSummary + "💡 Note: Provide a Gemini API Key above to unlock in-depth AI suggestions and career coaching."
+            val builtInKey = BuildConfig.GEMINI_API_KEY
+
+            if (builtInKey.isBlank() || builtInKey.contains("YOUR_ACTUAL_GEMINI_API_KEY_HERE")) {
+                tvResults.text = localSummary + "⚠️ No valid Gemini API key found in build configuration."
             } else {
-                tvResults.text = localSummary + "🤖 Consulting Gemini AI for deeper insights..."
-                analyzeWithGemini(apiKey, extractedResumeText, jobDesc, localSummary)
+                tvResults.text = localSummary + "🤖 Consulting CareerLens AI..."
+                analyzeWithGemini(builtInKey, extractedResumeText, jobDesc, localSummary)
             }
         }
     }
@@ -110,8 +110,8 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             val prompt = """
-                You are CareerLens AI, an expert tech recruiter and resume evaluator.
-                Compare the following Resume and Job Description. Provide a concise, structured review with:
+                You are CareerLens AI, an expert technical recruiter and resume reviewer.
+                Analyze the following Resume against the Job Description. Provide a concise, structured review with:
                 1. Match Strengths (2-3 bullet points)
                 2. Critical Skill Gaps & Weaknesses (2-3 bullet points)
                 3. High-Impact Action Items to Improve Resume for This Role (3 bullet points)
@@ -153,15 +153,15 @@ class MainActivity : AppCompatActivity() {
                     btnAnalyze.isEnabled = true
                     if (response.isSuccessful) {
                         val parsedText = parseGeminiResponse(responseBody)
-                        tvResults.text = localSummary + "🤖 Gemini AI Evaluation:\n\n$parsedText"
+                        tvResults.text = localSummary + "🤖 AI Feedback:\n\n$parsedText"
                     } else {
-                        tvResults.text = localSummary + "⚠️ Gemini API Error (${response.code}):\n$responseBody"
+                        tvResults.text = localSummary + "⚠️ AI Service Error (${response.code}):\n$responseBody"
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     btnAnalyze.isEnabled = true
-                    tvResults.text = localSummary + "⚠️ Failed to connect to Gemini: ${e.localizedMessage}"
+                    tvResults.text = localSummary + "⚠️ Network connection error: ${e.localizedMessage}"
                 }
             }
         }
