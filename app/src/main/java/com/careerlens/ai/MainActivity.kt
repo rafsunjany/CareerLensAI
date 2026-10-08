@@ -19,6 +19,13 @@ import com.tom_roush.pdfbox.text.PDFTextStripper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,11 +33,17 @@ class MainActivity : AppCompatActivity() {
     private var selectedPdfName: String? = null
     private var extractedResumeText: String = ""
 
+    private lateinit var etApiKey: TextInputEditText
     private lateinit var tvResumeStatus: TextView
     private lateinit var etJobDescription: TextInputEditText
     private lateinit var btnAnalyze: Button
     private lateinit var cardResult: MaterialCardView
     private lateinit var tvResults: TextView
+
+    private val httpClient = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .build()
 
     private val selectPdfLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -50,6 +63,7 @@ class MainActivity : AppCompatActivity() {
         PDFBoxResourceLoader.init(applicationContext)
 
         val btnUploadResume: Button = findViewById(R.id.btnUploadResume)
+        etApiKey = findViewById(R.id.etApiKey)
         btnAnalyze = findViewById(R.id.btnAnalyze)
         tvResumeStatus = findViewById(R.id.tvResumeStatus)
         etJobDescription = findViewById(R.id.etJobDescription)
@@ -61,10 +75,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnAnalyze.setOnClickListener {
+            val apiKey = etApiKey.text.toString().trim()
             val jobDesc = etJobDescription.text.toString().trim()
 
             if (selectedPdfUri == null || extractedResumeText.isBlank()) {
-                Toast.makeText(this, "Please select and load a valid resume PDF first", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please select and load a resume PDF", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -73,30 +88,94 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Run comparison algorithm
-            val result = ResumeMatcher.calculateMatch(extractedResumeText, jobDesc)
+            // Quick offline baseline match
+            val localMatch = ResumeMatcher.calculateMatch(extractedResumeText, jobDesc)
 
             cardResult.visibility = View.VISIBLE
-            tvResults.text = buildString {
-                append("Match Score: ${result.score}%\n\n")
+            val localSummary = "📊 Baseline Match: ${localMatch.score}%\n" +
+                    "• Matched: ${if (localMatch.matchedSkills.isEmpty()) "None" else localMatch.matchedSkills.joinToString(", ")}\n" +
+                    "• Missing: ${if (localMatch.missingSkills.isEmpty()) "None" else localMatch.missingSkills.joinToString(", ")}\n\n"
 
-                append("Matching Skills (${result.matchedSkills.size}):\n")
-                if (result.matchedSkills.isNotEmpty()) {
-                    append(result.matchedSkills.joinToString(", ") { "• $it" })
-                } else {
-                    append("None explicitly detected.")
-                }
-                append("\n\n")
-
-                append("Missing Skills / Keywords (${result.missingSkills.size}):\n")
-                if (result.missingSkills.isNotEmpty()) {
-                    append(result.missingSkills.joinToString(", ") { "• $it" })
-                } else {
-                    append("Great match! No critical missing taxonomy skills.")
-                }
-                append("\n\n")
-                append("Analyzed from: $selectedPdfName")
+            if (apiKey.isEmpty()) {
+                tvResults.text = localSummary + "💡 Note: Provide a Gemini API Key above to unlock in-depth AI suggestions and career coaching."
+            } else {
+                tvResults.text = localSummary + "🤖 Consulting Gemini AI for deeper insights..."
+                analyzeWithGemini(apiKey, extractedResumeText, jobDesc, localSummary)
             }
+        }
+    }
+
+    private fun analyzeWithGemini(apiKey: String, resume: String, job: String, localSummary: String) {
+        btnAnalyze.isEnabled = false
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val prompt = """
+                You are CareerLens AI, an expert tech recruiter and resume evaluator.
+                Compare the following Resume and Job Description. Provide a concise, structured review with:
+                1. Match Strengths (2-3 bullet points)
+                2. Critical Skill Gaps & Weaknesses (2-3 bullet points)
+                3. High-Impact Action Items to Improve Resume for This Role (3 bullet points)
+
+                Resume:
+                $resume
+
+                Job Description:
+                $job
+            """.trimIndent()
+
+            try {
+                val jsonPayload = JSONObject().apply {
+                    val contentsArray = JSONArray().apply {
+                        val part = JSONObject().apply {
+                            put("parts", JSONArray().apply {
+                                put(JSONObject().apply {
+                                    put("text", prompt)
+                                })
+                            })
+                        }
+                        put(part)
+                    }
+                    put("contents", contentsArray)
+                }
+
+                val body = jsonPayload.toString().toRequestBody("application/json".toMediaType())
+                val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
+
+                val request = Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .build()
+
+                val response = httpClient.newCall(request).execute()
+                val responseBody = response.body?.string().orEmpty()
+
+                withContext(Dispatchers.Main) {
+                    btnAnalyze.isEnabled = true
+                    if (response.isSuccessful) {
+                        val parsedText = parseGeminiResponse(responseBody)
+                        tvResults.text = localSummary + "🤖 Gemini AI Evaluation:\n\n$parsedText"
+                    } else {
+                        tvResults.text = localSummary + "⚠️ Gemini API Error (${response.code}):\n$responseBody"
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    btnAnalyze.isEnabled = true
+                    tvResults.text = localSummary + "⚠️ Failed to connect to Gemini: ${e.localizedMessage}"
+                }
+            }
+        }
+    }
+
+    private fun parseGeminiResponse(jsonString: String): String {
+        return try {
+            val root = JSONObject(jsonString)
+            val candidates = root.getJSONArray("candidates")
+            val content = candidates.getJSONObject(0).getJSONObject("content")
+            val parts = content.getJSONArray("parts")
+            parts.getJSONObject(0).getString("text")
+        } catch (e: Exception) {
+            "Could not parse AI response: ${e.localizedMessage}"
         }
     }
 
