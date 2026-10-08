@@ -28,50 +28,11 @@
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
-        <!-- Gemini API Key Section -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/surface"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp"
-            app:contentPadding="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Gemini API Key"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:hint="Paste your Google AI Studio key"
-                    app:boxBackgroundMode="outline">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etApiKey"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textPassword" />
-                </com.google.android.material.textfield.TextInputLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
         <!-- Resume Section -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="20dp"
             app:cardBackgroundColor="@color/surface"
             app:cardCornerRadius="12dp"
             app:cardElevation="2dp"
@@ -157,7 +118,7 @@
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="18dp"
-            android:text="Analyze With Gemini AI"
+            android:text="Analyze With CareerLens AI"
             android:textSize="16sp"
             app:cornerRadius="10dp" />
 
