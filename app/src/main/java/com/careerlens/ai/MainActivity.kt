@@ -86,7 +86,6 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Quick offline baseline match
             val localMatch = ResumeMatcher.calculateMatch(extractedResumeText, jobDesc)
 
             cardResult.visibility = View.VISIBLE
@@ -139,10 +138,11 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 val body = jsonPayload.toString().toRequestBody("application/json".toMediaType())
-                val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
+                val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 
                 val request = Request.Builder()
                     .url(url)
+                    .addHeader("x-goog-api-key", apiKey.trim())
                     .post(body)
                     .build()
 
