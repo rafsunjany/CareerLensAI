@@ -14,7 +14,6 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        // Replace the placeholder below with your real API key (keep the quotes inside quotes)
         val geminiKey = "AQ.Ab8RN6JFam8CoH7i9vL_OpiPNlgYnLlX51sEyIeb6dyZP4pMKQ"
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
     }
