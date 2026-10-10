@@ -13,13 +13,6 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
-        val geminiKey = "AQ.Ab8RN6JFam8CoH7i9vL_OpiPNlgYnLlX51sEyIeb6dyZP4pMKQ"
-        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
-    }
-
-    buildFeatures {
-        buildConfig = true
     }
 
     buildTypes {
@@ -41,5 +34,4 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
