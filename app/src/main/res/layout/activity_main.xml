@@ -15,6 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto"
             android:text="CareerLens AI"
             android:textColor="@color/primary"
             android:textSize="26sp"
@@ -24,6 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
+            android:fontFamily="@font/roboto"
             android:text="Offline Resume &amp; Job Matcher"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
@@ -46,6 +48,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto"
                     android:text="1. Resume (PDF)"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
@@ -56,6 +59,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
+                    android:fontFamily="@font/roboto"
                     android:text="Choose PDF Resume"
                     app:cornerRadius="8dp" />
 
@@ -64,6 +68,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
+                    android:fontFamily="@font/roboto"
                     android:text="No file chosen yet"
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
@@ -88,6 +93,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto"
                     android:text="2. Job Description"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
@@ -104,6 +110,7 @@
                         android:id="@+id/etJobDescription"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/roboto"
                         android:gravity="top"
                         android:inputType="textMultiLine"
                         android:lines="4"
@@ -118,6 +125,7 @@
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="18dp"
+            android:fontFamily="@font/roboto"
             android:text="Analyze Match (Offline)"
             android:textSize="16sp"
             app:cornerRadius="10dp" />
@@ -143,6 +151,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto"
                     android:text="Analysis Report"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
@@ -153,6 +162,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
+                    android:fontFamily="@font/roboto"
                     android:lineSpacingExtra="3dp"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
