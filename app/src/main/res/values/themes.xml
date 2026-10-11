@@ -8,11 +8,11 @@
         <item name="colorSurface">@color/surface</item>
         <item name="android:colorBackground">@color/background</item>
 
-        <!-- Global Universal Typography: Forces Roboto / Sans-Serif systemwide -->
+        <!-- Global Universal Typography: Enforces Roboto / Sans-Serif systemwide -->
         <item name="android:fontFamily">@font/roboto</item>
         <item name="fontFamily">@font/roboto</item>
 
-        <!-- Material3 text appearances forced to Roboto -->
+        <!-- Material3 text appearances -->
         <item name="textAppearanceHeadlineLarge">@style/AppTextAppearance.Headline</item>
         <item name="textAppearanceBodyLarge">@style/AppTextAppearance.Body</item>
         <item name="textAppearanceBodyMedium">@style/AppTextAppearance.Body</item>
