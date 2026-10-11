@@ -1,17 +1,15 @@
 package com.careerlens.ai
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.careerlens.ai.R
-import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
@@ -19,6 +17,7 @@ import com.tom_roush.pdfbox.text.PDFTextStripper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,8 +28,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvResumeStatus: TextView
     private lateinit var etJobDescription: TextInputEditText
     private lateinit var btnAnalyze: Button
-    private lateinit var cardResult: MaterialCardView
-    private lateinit var tvResults: TextView
 
     private val selectPdfLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -53,8 +50,6 @@ class MainActivity : AppCompatActivity() {
         btnAnalyze = findViewById(R.id.btnAnalyze)
         tvResumeStatus = findViewById(R.id.tvResumeStatus)
         etJobDescription = findViewById(R.id.etJobDescription)
-        cardResult = findViewById(R.id.cardResult)
-        tvResults = findViewById(R.id.tvResults)
 
         btnUploadResume.setOnClickListener {
             selectPdfLauncher.launch("application/pdf")
@@ -73,40 +68,24 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Local Heuristic Matching Engine
+            // Perform matching
             val result = ResumeMatcher.calculateMatch(extractedResumeText, jobDesc)
 
-            cardResult.visibility = View.VISIBLE
-            tvResults.text = buildString {
-                append("📊 Overall Match Score: ${result.score}%\n\n")
+            // Check contact details (email or phone)
+            val hasContact = extractedResumeText.contains("@") || Regex("""\+?\d[\d\s-]{8,}\d""").containsMatchIn(extractedResumeText)
 
-                append("✅ Matched Skills & Keywords (${result.matchedSkills.size}):\n")
-                if (result.matchedSkills.isNotEmpty()) {
-                    append(result.matchedSkills.joinToString("\n") { "  • $it" })
-                } else {
-                    append("  • No direct matching keywords found")
-                }
-                append("\n\n")
+            // Check measurable achievement keywords (%, $, increased, decreased, saved, led)
+            val hasMetrics = Regex("""\b(\d+%|\$\d+|increased|improved|reduced|led|built)\b""", RegexOption.IGNORE_CASE).containsMatchIn(extractedResumeText)
 
-                append("❌ Missing Skills / Requirements (${result.missingSkills.size}):\n")
-                if (result.missingSkills.isNotEmpty()) {
-                    append(result.missingSkills.joinToString("\n") { "  • $it" })
-                } else {
-                    append("  • No major missing requirements detected!")
-                }
-                append("\n\n")
-
-                append("💡 Recommendations:\n")
-                if (result.score >= 70) {
-                    append("• Strong alignment! Your resume closely reflects the job requirements.\n")
-                    append("• Highlight specific achievements and impact metrics for your matched skills.")
-                } else if (result.score >= 40) {
-                    append("• Moderate alignment. Review the missing keywords above and incorporate relevant ones into your experience or project sections.\n")
-                    append("• Tailor your resume summary specifically to this role.")
-                } else {
-                    append("• Low alignment. Consider adding projects, certifications, or coursework covering the missing skills before applying.")
-                }
+            // Open Report Activity
+            val intent = Intent(this, ReportActivity::class.java).apply {
+                putExtra("EXTRA_SCORE", result.score)
+                putStringArrayListExtra("EXTRA_MATCHED", ArrayList(result.matchedSkills))
+                putStringArrayListExtra("EXTRA_MISSING", ArrayList(result.missingSkills))
+                putExtra("EXTRA_HAS_CONTACT", hasContact)
+                putExtra("EXTRA_HAS_METRICS", hasMetrics)
             }
+            startActivity(intent)
         }
     }
 
