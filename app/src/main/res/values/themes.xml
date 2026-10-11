@@ -8,11 +8,11 @@
         <item name="colorSurface">@color/surface</item>
         <item name="android:colorBackground">@color/background</item>
 
-        <!-- Global Universal Typography: Enforces Roboto / Sans-Serif systemwide -->
-        <item name="android:fontFamily">@font/roboto</item>
-        <item name="fontFamily">@font/roboto</item>
+        <!-- Global Typography: Forces clean Android Roboto sans-serif -->
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
 
-        <!-- Material3 text appearances -->
+        <!-- Material3 Text Appearances -->
         <item name="textAppearanceHeadlineLarge">@style/AppTextAppearance.Headline</item>
         <item name="textAppearanceBodyLarge">@style/AppTextAppearance.Body</item>
         <item name="textAppearanceBodyMedium">@style/AppTextAppearance.Body</item>
@@ -20,17 +20,18 @@
     </style>
 
     <style name="AppTextAppearance.Headline" parent="TextAppearance.Material3.HeadlineLarge">
-        <item name="android:fontFamily">@font/roboto</item>
-        <item name="fontFamily">@font/roboto</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="AppTextAppearance.Body" parent="TextAppearance.Material3.BodyLarge">
-        <item name="android:fontFamily">@font/roboto</item>
-        <item name="fontFamily">@font/roboto</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
     </style>
 
     <style name="AppTextAppearance.Button" parent="TextAppearance.Material3.LabelLarge">
-        <item name="android:fontFamily">@font/roboto</item>
-        <item name="fontFamily">@font/roboto</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
     </style>
 </resources>
